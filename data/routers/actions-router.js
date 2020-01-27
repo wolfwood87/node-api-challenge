@@ -35,7 +35,7 @@ router.delete('/:id', validateActionId, (req, res) => {
 })
 
 //Put request
-router.put("/:id", validateActionId, (req, res) => {
+router.put("/:id", validateActionId, validateAction, (req, res) => {
     const {id} = req.params;
     const changes = req.body;
 
@@ -65,5 +65,19 @@ function validateActionId(req, res, next) {
         res.status(500).json({message: "Exception", err})
       })
   }
-
+  function validateAction(req, res, next) {
+    const newAction = req.body
+  
+    if(newAction) {
+      if(newAction.description && newAction.notes) {
+        next();
+      }
+      else {
+        res.status(400).json({message: "missing required description and notes"})
+      }
+    }
+    else {
+      res.status(400).json({message: "missing action data"})
+    }
+  }
 module.exports = router;

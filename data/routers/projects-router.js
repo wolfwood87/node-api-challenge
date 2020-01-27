@@ -15,51 +15,27 @@ router.get('/', (req,res) => {
         })
 })
 
-router.get('/:id', (req, res) => {
-    const {id} = req.params;
-    Projects.get(id)
-        .then(project => {
-            if(project) {
-                res.status(201).json(project)
-            }
-            else {
-                res.status(404).json({message: "The project with the specified ID does not exist"})
-            }     
-        })
-        .catch(err => {
-            res.status(500).json({message: "The project information could not be retrieved"})
-        })
+router.get('/:id', validateProjectId, (req, res) => {
+    res.status(200).json(req.project)
 })
 
 //POST request
-router.post('/', (req, res) => {
+router.post('/', validateProject, (req, res) => {
     const newProject = req.body
-    if(newProject.name && newProject.description) {
-        Projects.insert(newProject)
-            .then(project => {
-                res.status(201).json(project)
-            })
-            .catch(err => {
-                res.status(500).json({messsage: "There was an error creating the project"})
-            })
-    }
-    else {
-        res.status(400).json({message: "Please provide the name and description for the project"})
-    }
+    Projects.insert(newProject)
+        .then(project => {
+            res.status(201).json(project)
+        })
+        .catch(err => {
+            res.status(500).json({messsage: "There was an error creating the project"})
+        })
 })
 
 //Delete request
-router.delete('/:id', (req, res) => {
-    const {id} = req.params;
-
-    Projects.remove(id)
+router.delete('/:id', validateProjectId, (req, res) => {
+    Projects.remove(req.project.id)
         .then(deleted => {
-            if(deleted) {
-                res.status(204).end()
-            }
-            else {
-                res.status(404).json({message: "The project with the specified ID does not exist"})
-            }
+            res.status(204).end()
         })
         .catch(err => {
             res.status(500).json({error: "The project could not be removed."})
@@ -67,23 +43,11 @@ router.delete('/:id', (req, res) => {
 })
 
 //Put request
-router.put("/:id", (req, res) => {
-    const {id} = req.params;
+router.put("/:id", validateProjectId, validateProject, (req, res) => {
     const changes = req.body;
-
-    Projects.update(id, changes)
+    Projects.update(req.project.id, changes)
         .then(updated => {
-            if(updated) {
-                if(changes.name && changes.description) {
-                    res.status(200).json(updated)
-                }
-                else{
-                    res.status(400).json({errorMessage: "Please provide a name and description."})
-                }
-            }
-            else {
-                res.status(404).json({message: "The project with the specified ID does not exist."})
-            }
+            res.status(200).json(updated)
         })
         .catch(err => {
             res.status(500).json({error: "The project information could not be modified."})
@@ -102,22 +66,17 @@ router.get('/:id/actions', validateProjectId, (req, res) => {
       })
   });
 
-router.post('/:id/actions', validateProjectId, (req, res) => {
+router.post('/:id/actions', validateProjectId, validateAction, (req, res) => {
     const newAction = req.body
     newAction.project_id = req.params.id
-    if(newAction.description && newAction.notes) {
-        Actions.insert(newAction)
-            .then(action => {
-                res.status(201).json(action)
-            })
-            .catch(err => {
-                res.status(500).json({messsage: "There was an error creating the action"})
-            })
-    }
-    else {
-        res.status(400).json({message: "Please provide the desription and notes for the action"})
-    }
-  });
+    Actions.insert(newAction)
+        .then(action => {
+            res.status(201).json(action)
+        })
+        .catch(err => {
+            res.status(500).json({messsage: "There was an error creating the action"})
+        })
+});
  
   
 //validate ProjectID middleware
@@ -139,4 +98,36 @@ function validateProjectId(req, res, next) {
       })
 
   }
+  function validateProject(req, res, next) {
+    const newProject = req.body
+  
+    if(newProject) {
+      if(newProject.name && newProject.description) {
+        next();
+      }
+      else {
+        res.status(400).json({message: "missing required name and description"})
+      }
+    }
+    else {
+      res.status(400).json({message: "missing project data"})
+    }
+  }
+
+  function validateAction(req, res, next) {
+    const newAction = req.body
+  
+    if(newAction) {
+      if(newAction.description && newAction.notes) {
+        next();
+      }
+      else {
+        res.status(400).json({message: "missing required description and notes"})
+      }
+    }
+    else {
+      res.status(400).json({message: "missing action data"})
+    }
+  }
+
 module.exports = router;
