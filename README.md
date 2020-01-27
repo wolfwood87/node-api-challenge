@@ -40,13 +40,25 @@ Demonstrate your understanding of this Sprint's concepts by answering the follow
 
 - [ ] Mention two parts of Express that you learned about this week.
 
+    I learned how to make endpoints with express with using req, res to return data back to the front end.
+    
+    I also learned how middleware can be used to make your code more DRY with custom middleware or can provide a way scramble your headers with helmet or other handy middleware.
+
 - [ ] Describe Middleware?
+
+    Middleware is a set of functions that execute in order, either providing a response or going on to the next part of the set depending on what is received.
 
 - [ ] Describe a Resource?
 
+    A resource is a component that we can manipulate with HTTP requests. It is usually represented in JSON format.
+
 - [ ] What can the API return to help clients know if a request was successful?
+    
+    It can return a 200 code with the data like "res.status(200).json(data)"
 
 - [ ] How can we partition our application into sub-applications?
+    
+    By using Express Router to break it up. We can create a file specifically for the sup-application and use express.Router() in that file to deal with the needs specifically in that file.
 
 ## Minimum Viable Product
 
